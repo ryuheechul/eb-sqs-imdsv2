@@ -92,6 +92,16 @@ hack-aws-config:
   SAVE ARTIFACT ./.hack-tmp/aws aws
   RUN rm -rf ./.hack-tmp
 
+npm-cache:
+  FROM node:16-bullseye-slim
+  WORKDIR /build-node-modules
+
+  COPY cdk/eb-sqs-imdsv2/package.json cdk/eb-sqs-imdsv2/package-lock.json ./
+
+  RUN npm install
+
+  SAVE ARTIFACT node_modules node_modules
+
 deploy-prep:
   FROM earthly/dind:alpine
   WORKDIR /workdir
@@ -100,43 +110,49 @@ deploy-prep:
   COPY --dir +package-docker-for-eb/docker-bundle.zip ./source-bundle/
   COPY docker-compose.cdk.yml .
   COPY --dir cdk ./
+  COPY --dir +npm-cache/node_modules ./cdk/eb-sqs-imdsv2/
 
-diff:
+deploy-prep-w-identity:
   FROM +deploy-prep
 
   # currently amazon/aws-cli is only being used for printing to show which identity is being used
-  WITH DOCKER --load earthly_cdk:latest=+cdk --pull amazon/aws-cli:2.7.2
+  WITH DOCKER --pull amazon/aws-cli:2.7.2
     RUN --no-cache \
-      docker-compose -f docker-compose.cdk.yml run --rm aws sts get-caller-identity \
-      && docker-compose -f docker-compose.cdk.yml run --rm cdk diff
-    # it's possible source bundle zip file appear to be different just because of new time stamp version each time
+      docker-compose -f docker-compose.cdk.yml run --rm aws sts get-caller-identity
+  END
+
+diff:
+  FROM +deploy-prep-w-identity
+
+  WITH DOCKER --load earthly_cdk:latest=+cdk
+    RUN --no-cache \
+      docker-compose -f docker-compose.cdk.yml run --rm cdk diff
   END
 
 deploy:
-  FROM +deploy-prep
+  FROM +deploy-prep-w-identity
 
-  # currently amazon/aws-cli is only being used for printing to show which identity is being used
-  WITH DOCKER --load earthly_cdk:latest=+cdk --pull amazon/aws-cli:2.7.2
+  WITH DOCKER --load earthly_cdk:latest=+cdk
+    RUN docker-compose -f docker-compose.cdk.yml run --entrypoint npm --rm cdk -- install
+  END
+
+  WITH DOCKER --load earthly_cdk:latest=+cdk
     RUN --no-cache \
-      docker-compose -f docker-compose.cdk.yml run --rm aws sts get-caller-identity \
-      && docker-compose -f docker-compose.cdk.yml run --rm --entrypoint npm cdk -- install \
-      && docker-compose -f docker-compose.cdk.yml run --rm cdk \
-        deploy --require-approval=never --outputs-file=../outputs.json
+      docker-compose -f docker-compose.cdk.yml run --rm \
+      cdk deploy --require-approval=never --outputs-file=../outputs.json
   END
 
   RUN cat cdk/outputs.json | jq -r '"http://"+.[].endpointUrl' > endpoint-url.txt
 
   # run tests against the deployed EB
   WITH DOCKER --load tester:latest=+tester
-    RUN docker run --network=host -e FULL_URL_TO_TEST=$(cat endpoint-url.txt) tester
+    RUN --no-cache docker run --network=host -e FULL_URL_TO_TEST=$(cat endpoint-url.txt) tester
   END
 
 destroy:
-  FROM +deploy-prep
+  FROM +deploy-prep-w-identity
 
-  # currently amazon/aws-cli is only being used for printing to show which identity is being used
-  WITH DOCKER --load earthly_cdk:latest=+cdk --pull amazon/aws-cli:2.7.2
+  WITH DOCKER --load earthly_cdk:latest=+cdk
     RUN --no-cache \
-      docker-compose -f docker-compose.cdk.yml run --rm aws sts get-caller-identity \
-      && docker-compose -f docker-compose.cdk.yml run --rm cdk destroy --force
+      docker-compose -f docker-compose.cdk.yml run --rm cdk destroy --force
   END
