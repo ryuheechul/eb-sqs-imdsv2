@@ -1,1 +1,5 @@
-celery[redis,sqs] == 4.4.7
+celery[redis,sqs] == 4.4.7    # the version here is pinned to resemble the environment in the outage case
+flask == 2.1.2 	              # to use a http server to bridge between Celery and testing code
+# for rollbar error tracking:
+rollbar == 0.16.2             # - https://docs.rollbar.com/docs/python
+blinker == 1.4                # - https://docs.rollbar.com/docs/flask
