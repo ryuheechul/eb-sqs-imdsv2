@@ -78,3 +78,7 @@ So I changed to `BUILD --platform=linux/arm64 --platform=linux/amd64 +push` and 
 expected it to be `"ca-central-1"` (because I didn't notice `,` at the end of the line) but it actually became `("ca-central-1,)`
 
 So if you are copying lines from a JSON-looking dictionary, make sure to delete the trailing comma
+
+### Deno Can Be Good Choice for a Quick and Simple Integration Test
+Because it has a built-in testing framework and `fetch` API is available from the standard module.
+This gets rid of the needs of having to choose and set up third party framework/library options like a case of working with NodeJS.
