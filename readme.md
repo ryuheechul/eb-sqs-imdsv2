@@ -45,21 +45,21 @@ _I assume `aws configure` has been done on the host machine_
 ## Key Files
 
 ### Build & Deploy
-[Makefile](./Makefile) - all you need to run things, it's a gateway and a manual
-[Earthfile](./Earthfile) - all actual builds and triggers are written here
-[./gen-dc-interation-test.sh](./gen-dc-interation-test.sh) - generate docker-compose.it.yml for integration tests
-[./gen-dc-elasticbeanstalk.sh](./gen-dc-elasticbeanstalk.sh) - generate docker-compose.yml and other files for Elasticbeanstalk
-[docker-compose.cdk.yml](./docker-compose.cdk.yml) - used to run cdk deployments
-[cdk/eb-sqs-imdsv2/lib/eb-sqs-imdsv2-stack.ts](./cdk/eb-sqs-imdsv2/lib/eb-sqs-imdsv2-stack.ts) - the meat of cdk deployments
+- [Makefile](./Makefile) - all you need to run things, it's a gateway and a manual
+- [Earthfile](./Earthfile) - all actual builds and triggers are written here
+- [./gen-dc-interation-test.sh](./gen-dc-interation-test.sh) - generate docker-compose.it.yml for integration tests
+- [./gen-dc-elasticbeanstalk.sh](./gen-dc-elasticbeanstalk.sh) - generate docker-compose.yml and other files for Elasticbeanstalk
+- [docker-compose.cdk.yml](./docker-compose.cdk.yml) - used to run cdk deployments
+- [cdk/eb-sqs-imdsv2/lib/eb-sqs-imdsv2-stack.ts](./cdk/eb-sqs-imdsv2/lib/eb-sqs-imdsv2-stack.ts) - the meat of cdk deployments
 
 ### Python
-[requirements.txt](./requirements.txt) - PYPI packages to install
-[tasks.py](./tasks.py) - Celery tasks
-[server.py](./server.py) - Flask server to handle requests that delegates to Celery
+- [requirements.txt](./requirements.txt) - PYPI packages to install
+- [tasks.py](./tasks.py) - Celery tasks
+- [server.py](./server.py) - Flask server to handle requests that delegates to Celery
 
 ### Tests
-[deps.ts](./deps.ts) - Deno packages
-[test.ts](./test.ts) - Integration test code using Deno
+- [deps.ts](./deps.ts) - Deno packages
+- [test.ts](./test.ts) - Integration test code using Deno
 
 
 ## What I Learned
