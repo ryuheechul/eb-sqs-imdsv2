@@ -41,10 +41,10 @@ integration-test:
 
   ARG IMAGE_NAME=handler:latest
 
-  COPY gen-docker-compose-earthly-yml.sh .
-  RUN ./gen-docker-compose-earthly-yml.sh
+  COPY gen-dc-integration-test.sh .
+  RUN ./gen-dc-integration-test.sh
 
-  WITH DOCKER --compose docker-compose.earthly.yml \
+  WITH DOCKER --compose docker-compose.it.yml \
     --load $IMAGE_NAME=+dev --load tester:latest=+tester
     RUN sleep 1 && docker run --network=host tester
   END
@@ -72,9 +72,9 @@ package-docker-for-eb:
   # delete them only if not building it on demand
   RUN test -n "${IMAGE_NAME}" && rm tasks.py server.py requirements.txt || true
 
-  COPY gen-docker-files.sh .
-  RUN ./gen-docker-files.sh \
-    && rm ./gen-docker-files.sh \
+  COPY gen-dc-elasticbeanstalk.sh .
+  RUN ./gen-dc-elasticbeanstalk.sh \
+    && rm ./gen-dc-elasticbeanstalk.sh \
     && zip -r docker-bundle.zip .
 
   SAVE ARTIFACT docker-bundle.zip docker-bundle.zip

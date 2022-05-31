@@ -3,7 +3,7 @@ RESULT_BACKEND="${BROKER_URL}"
 
 curr_time=$(date +%H:%M)
 
-cat <<EOF > docker-compose.earthly.yml
+cat <<EOF > docker-compose.it.yml
 version: '3'
 services:
   redis:
